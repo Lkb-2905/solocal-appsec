@@ -1,0 +1,3 @@
+GET /
+GET /search?q=test
+GET /api/items/1
