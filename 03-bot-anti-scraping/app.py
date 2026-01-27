@@ -1,15 +1,13 @@
+import argparse
 import time
 from collections import defaultdict, deque
 
 
 def main() -> None:
-    try:
-        from flask import Flask, request, jsonify
-    except Exception:
-        print("Flask requis. Installez: pip install flask")
-        return
+    parser = argparse.ArgumentParser(description="Bot anti-scraping (Flask)")
+    parser.add_argument("--demo", action="store_true", help="Mode demo sans serveur")
+    args = parser.parse_args()
 
-    app = Flask(__name__)
     window = 1.0
     limit = 10
     buckets = defaultdict(lambda: deque())
@@ -21,6 +19,22 @@ def main() -> None:
             dq.popleft()
         dq.append(now)
         return len(dq) > limit
+
+    if args.demo:
+        ip = "203.0.113.42"
+        for i in range(1, 13):
+            status = "429" if is_rate_limited(ip) else "200"
+            print(f"Requete {i}: {status}")
+        return
+
+    try:
+        from flask import Flask, request, jsonify
+    except Exception:
+        print("Flask requis. Installez: pip install flask")
+        print("Astuce: relancez avec --demo pour une demo.")
+        return
+
+    app = Flask(__name__)
 
     @app.route("/")
     def index():
